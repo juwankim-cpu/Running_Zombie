@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 55d944e9c9ae7b641922a4a59e04c21c
+guid: 4f4db26612a6db74c800feb6fce24802
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5530781715760837572
-    second: "\uBC14\uB2E5_0"
+      213: 6682738439518977790
+    second: Ground_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -139,23 +139,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ground_0
+      name: Ground_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1744
-        height: 608
+        x: 71
+        y: 33
+        width: 1858
+        height: 241
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 7204128395cc9fd4e8acc0eb5879efa3
-      internalID: -559739900
+      spriteID: efe706e343bddbc50800000000000000
+      internalID: 6682738439518977790
       vertices: []
       indices: 
       edges: []
@@ -164,7 +164,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 7abba5ba73d26d948b2b55d90bd4a77a
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -172,13 +172,9 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries:
-      - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":true,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
-      - key: SpriteEditor.SliceOnImport
-        value: True
+      entries: []
     nameFileIdTable:
-      ground_0: -559739900
+      Ground_0: 6682738439518977790
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
