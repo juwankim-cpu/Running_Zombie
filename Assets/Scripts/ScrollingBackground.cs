@@ -16,7 +16,9 @@ public class ScrollingBackground : MonoBehaviour
     void Update()
     {
         // 시간에 따라 X축 오프셋을 계산합니다.
-        Vector2 offset = new Vector2(Time.time * speed, 0);
+        // GameManager의 GameSpeed를 곱합니다
+        Vector2 offset = new Vector2(Time.time * speed 
+        * GameManager.instance.gameSpeed, 0);
         
         // 메인 텍스처의 오프셋에 적용하여 이미지를 움직입니다.
         meshRenderer.material.mainTextureOffset = offset;
