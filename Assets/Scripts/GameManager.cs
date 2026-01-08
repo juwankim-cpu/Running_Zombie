@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
@@ -7,23 +8,27 @@ public class GameManager : MonoBehaviour
 
     [Header("Score Settings")]
     public float score = 0f;
-    public Text scoreText; // 점수 표시 UI
 
     [Header("Health Settings")]
     public float maxHp = 200f;
     public float currentHp;
     public float hpDecreaseRate = 3f; // 초당 체력 감소량
-    public Image hpBarFill; // 체력 표시 UI
-    public Image lowHpOverlay; // 저체력 시 붉은 빛 오버레이 (HP 15% 미만)
-    public float lowHpThreshold = 0.15f; // 저체력 임계값 (15%)
-	public float lowHpBlinkFrequency = 2f; // 초당 깜빡임 횟수
-	public float lowHpOverlayMaxAlpha = 0.3f; // 깜빡일 때 최대 알파
 
     [Header("Difficulty Settings")]
     public float gameSpeed = 1f; // 게임 속도 배율
     public float speedMultiplier = 0.2f; // 난이도 상승 시 증가할 속도
     public float distanceToLevelUp = 100f; // 난이도 상승 거리
     private float nextLevelDistance = 100f;
+
+    [Header("Fever Time Settings")]
+    public float feverGauge = 0f; // 피버 게이지 (0~100)
+    public float maxFeverGauge = 100f; // 피버 게이지 최대값
+    public float feverDuration = 5f; // 피버 타임 지속 시간 (초)
+    public float feverSpeedMultiplier = 2f; // 피버 타임 시 게임 속도 배율
+    public bool isFeverTime = false; // 피버 타임 활성화 여부
+    private float baseGameSpeed = 1f; // 피버 타임 전 기본 게임 속도
+
+    private bool isGameOver = false; // 게임 오버 상태
 
     void Awake()
     {
@@ -37,27 +42,28 @@ public class GameManager : MonoBehaviour
     {
         // 체력 초기화
         currentHp = maxHp;
+        
+        // 기본 게임 속도 초기화
+        baseGameSpeed = gameSpeed;
     }
     void Update()
     {
         // 점수(거리) 계산: 게임 속도에 비례해서 증가
         score += Time.deltaTime * gameSpeed * 5f;
-        scoreText.text = "Distance: " + Mathf.Floor(score).ToString() + "M";
-
-        // 2. 시간에 따른 체력 감소
-        UpdateHP(-hpDecreaseRate * Time.deltaTime);
-
-        // 3. 체력바 UI 업데이트
-        if (hpBarFill != null)
+        
+        // UI 업데이트
+        if (UIManager.instance != null)
         {
-            hpBarFill.fillAmount = currentHp / maxHp;
+            UIManager.instance.UpdateScore(score);
+            UIManager.instance.UpdateHPBar(currentHp, maxHp);
+            UIManager.instance.UpdateFeverBar(feverGauge, maxFeverGauge);
         }
 
-        // 4. 저체력 효과 (HP 15% 미만일 때 붉은 빛)
-        UpdateLowHpEffect();
+        // 시간에 따른 체력 감소
+        UpdateHP(-hpDecreaseRate * Time.deltaTime);
 
-        // 5. 게임 오버 체크
-        if (currentHp <= 0)
+        // 게임 오버 체크
+        if (currentHp <= 0 && !isGameOver)
         {
             GameOver();
         }
@@ -69,7 +75,12 @@ public class GameManager : MonoBehaviour
 
     void LevelUp()
     {
-        gameSpeed += speedMultiplier;
+        baseGameSpeed += speedMultiplier;
+        // 피버 타임 중이 아니면 즉시 적용, 피버 타임 중이면 피버 타임 종료 후 적용됨
+        if (!isFeverTime)
+        {
+            gameSpeed = baseGameSpeed;
+        }
         nextLevelDistance += distanceToLevelUp;
     }
 
@@ -80,33 +91,59 @@ public class GameManager : MonoBehaviour
         currentHp = Mathf.Clamp(currentHp, 0, maxHp); // 0~200 사이로 고정
     }
 
-    void UpdateLowHpEffect()
+    // 피버 게이지 증가 함수
+    public void AddFeverGauge(float amount)
     {
-        if (lowHpOverlay != null)
+        feverGauge += amount;
+        feverGauge = Mathf.Clamp(feverGauge, 0f, maxFeverGauge);
+
+        // 피버 게이지가 최대값에 도달하면 피버 타임 시작
+        if (feverGauge >= maxFeverGauge && !isFeverTime)
         {
-            float hpRatio = currentHp / maxHp;
-            
-            if (hpRatio < lowHpThreshold)
-            {
-				// HP가 15% 미만일 때 붉은 오버레이가 깜빡이도록 처리 (정사각파 형태)
-				bool onPhase = Mathf.FloorToInt(Time.unscaledTime * lowHpBlinkFrequency) % 2 == 0;
-				Color color = lowHpOverlay.color;
-				color.a = onPhase ? lowHpOverlayMaxAlpha : 0f;
-				lowHpOverlay.color = color;
-				lowHpOverlay.enabled = true;
-            }
-            else
-            {
-                // HP가 15% 이상이면 효과 비활성화
-                lowHpOverlay.enabled = false;
-            }
+            StartFeverTime();
         }
+    }
+
+    // 피버 타임 시작
+    void StartFeverTime()
+    {
+        if (isFeverTime) return; // 이미 피버 타임 중이면 무시
+
+        isFeverTime = true;
+        // 현재 baseGameSpeed를 저장 (피버 타임 시작 전의 기본 속도)
+        // 피버 타임 중에는 baseGameSpeed는 계속 추적되지만 gameSpeed만 2배로 증가
+        gameSpeed = baseGameSpeed * feverSpeedMultiplier; // 게임 속도 2배
+        feverGauge = maxFeverGauge; // 게이지 최대값으로 고정
+
+        // 피버 타임 종료 코루틴 시작
+        StartCoroutine(EndFeverTimeCoroutine());
+    }
+
+    // 피버 타임 종료 코루틴
+    IEnumerator EndFeverTimeCoroutine()
+    {
+        yield return new WaitForSeconds(feverDuration);
+
+        // 피버 타임 종료
+        isFeverTime = false;
+        feverGauge = 0f;
+        gameSpeed = baseGameSpeed; // 현재 점수에 맞는 게임 속도로 복귀
     }
 
     void GameOver()
     {
+        if (isGameOver) return; // 이미 게임 오버 상태면 무시
+        
+        isGameOver = true;
         Debug.Log("Game Over");
-        // 여기에 게임 오버 로직 추가 가능 (예: 씬 재시작, UI 표시 등)
-        Time.timeScale = 0f; // 게임 일시정지
+        
+        // 게임 일시정지
+        Time.timeScale = 0f;
+        
+        // 결과 UI 표시
+        if (UIManager.instance != null)
+        {
+            UIManager.instance.ShowResultUI(score);
+        }
     }
 }

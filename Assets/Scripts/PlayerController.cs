@@ -104,19 +104,34 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.CompareTag("Obstacle"))
         {
+            // 피버 타임 중이면 충돌 무시
+            if (GameManager.instance != null && GameManager.instance.isFeverTime)
+            {
+                // 피버 타임 중에는 장애물을 비활성화만 함 (체력 감소, 피격 효과 없음)
+                collision.gameObject.SetActive(false);
+                return;
+            }
+
             Debug.Log("장애물 충돌! HP -15");
+            
+            // 현재 체력 저장 (체력 감소 전)
+            float hpBeforeHit = GameManager.instance.currentHp;
             
             // GameManager에 접근하여 체력 감소
             GameManager.instance.UpdateHP(-15f);
+            
+            // 체력 감소 후 HP 확인
+            float hpAfterHit = GameManager.instance.currentHp;
+            bool willGameOver = hpAfterHit <= 0f;
 
-            // 피격 연출: 깜빡임 효과
-            if (!isBlinking)
+            // 피격 연출: 깜빡임 효과 (게임 오버가 아닐 때만)
+            if (!willGameOver && !isBlinking)
             {
                 StartCoroutine(BlinkEffect());
             }
 
-            // 피격 연출: 화면 흔들림
-            if (CameraShake.instance != null)
+            // 피격 연출: 화면 흔들림 (게임 오버가 아닐 때만)
+            if (!willGameOver && CameraShake.instance != null)
             {
                 CameraShake.instance.Shake(0.2f, 0.3f);
             }
