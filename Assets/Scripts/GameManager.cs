@@ -19,6 +19,7 @@ public class GameManager : MonoBehaviour
     public float speedMultiplier = 0.2f; // 난이도 상승 시 증가할 속도
     public float distanceToLevelUp = 100f; // 난이도 상승 거리
     private float nextLevelDistance = 100f;
+    public int currentLevel = 1; // 현재 난이도 레벨 (공개하여 ObstacleManager에서 접근 가능)
 
     [Header("Fever Time Settings")]
     public float feverGauge = 0f; // 피버 게이지 (0~100)
@@ -75,6 +76,7 @@ public class GameManager : MonoBehaviour
 
     void LevelUp()
     {
+        currentLevel++; // 난이도 레벨 증가
         baseGameSpeed += speedMultiplier;
         // 피버 타임 중이 아니면 즉시 적용, 피버 타임 중이면 피버 타임 종료 후 적용됨
         if (!isFeverTime)
@@ -82,6 +84,12 @@ public class GameManager : MonoBehaviour
             gameSpeed = baseGameSpeed;
         }
         nextLevelDistance += distanceToLevelUp;
+        
+        // ObstacleManager에 난이도 변경 알림
+        if (ObstacleManager.instance != null)
+        {
+            ObstacleManager.instance.OnDifficultyChanged(currentLevel);
+        }
     }
 
      // 체력을 변화시키는 공용 함수 (회복/데미지 모두 사용)

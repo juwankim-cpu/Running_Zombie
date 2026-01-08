@@ -1311,6 +1311,7 @@ MonoBehaviour:
   gameSpeed: 1
   speedMultiplier: 0.1
   distanceToLevelUp: 100
+  currentLevel: 1
   feverGauge: 0
   maxFeverGauge: 100
   feverDuration: 5
@@ -1492,8 +1493,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ObstacleManager
   obstaclePrefab: {fileID: 6900834838773811734, guid: 6c6359a5f8e624b4e890378e057f272d, type: 3}
-  poolSize: 5
-  spawnRate: 2
+  poolSize: 20
+  baseSpawnRate: 2
+  spawnRateDecreasePerLevel: 0.05
+  minSpawnRate: 0.5
   lastSpawnRealTime: -10
 --- !u!4 &1324807194
 Transform:
