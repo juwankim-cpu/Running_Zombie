@@ -5,6 +5,7 @@ using System.Collections;
 
 public class ResultUI : MonoBehaviour
 {
+    public static ResultUI instance;
     [Header("UI References")]
     public Text scoreText; // 점수 표시 텍스트
     public Text deathReasonText; // 사망 이유 텍스트
