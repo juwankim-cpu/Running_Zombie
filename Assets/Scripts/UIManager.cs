@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 public class UIManager : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class UIManager : MonoBehaviour
     public Image hpBarFill; // 체력 표시 UI
     public Image feverBarFill; // 피버 게이지 표시 UI
     public Image lowHpOverlay; // 저체력 시 붉은 빛 오버레이 (HP 15% 미만)
+    public Text countdownText;
 
     [Header("Low HP Effect Settings")]
     public float lowHpThreshold = 0.15f; // 저체력 임계값 (15%)
@@ -20,6 +22,10 @@ public class UIManager : MonoBehaviour
     public ResultUI resultUI; // 결과 UI 참조
 
     private bool isGameOver = false; // 게임 오버 상태
+
+    [Header("Pause UI")]
+    public GameObject pauseUI;
+    
 
     void Awake()
     {
@@ -120,5 +126,57 @@ public class UIManager : MonoBehaviour
     public void ResetGameOverState()
     {
         isGameOver = false;
+    }
+
+    public void PauseGame()
+    {
+        pauseUI.SetActive(true);
+        Time.timeScale = 0f;
+    }
+    public void ResumeGame()
+    {
+       
+        
+        ResumeGameWithCountDown();
+    }
+
+    public void ResumeGameWithCountDown()
+    {
+        StartCoroutine(CountdownCoroutine());
+    }
+
+    IEnumerator CountdownCoroutine()
+    {
+        // 1. 일시정지 UI 비활성화
+        if (pauseUI != null) pauseUI.SetActive(false);
+
+        // 2. 카운트다운 시작
+        if (countdownText != null)
+        {
+            countdownText.gameObject.SetActive(true);
+            
+            for (int i = 3; i > 0; i--)
+            {
+                countdownText.text = i.ToString();
+                // 중요: WaitForSecondsRealtime을 써야 timeScale이 0일 때도 시간이 흐릅니다.
+                yield return new WaitForSecondsRealtime(1f); 
+            }
+            
+            countdownText.text = "GO!";
+            yield return new WaitForSecondsRealtime(0.5f);
+            countdownText.gameObject.SetActive(false);
+        }
+
+        // 3. 게임 재개 (난이도는 GameManager.instance.gameSpeed에 의해 자동 유지됨)
+        Time.timeScale = 1f;
+    }
+
+    public void StopGame()
+    {
+        Time.timeScale = 0f;
+        pauseUI.SetActive(false);
+        isGameOver = true;
+        
+        resultUI.ShowResult(GameManager.instance.score);
     }
 }
